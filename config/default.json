@@ -1,0 +1,28 @@
+{
+  "exchange": "binance",
+  "symbols": ["BTC/USDT"],
+  "leverage": 1,
+  "dryRun": true,
+  "risk": {
+    "maxLeverage": 10,
+    "maxRiskPerTrade": 0.01,
+    "maxDrawdown": 0.2,
+    "dailyLossLimit": 0.05,
+    "trailingStopPct": 0.02
+  },
+  "strategies": {
+    "trendFollowing": {
+      "enabled": true,
+      "shortPeriod": 20,
+      "longPeriod": 50,
+      "timeframe": "1h"
+    },
+    "meanReversion": {
+      "enabled": false,
+      "period": 20,
+      "stdMultiplier": 2,
+      "rsiPeriod": 14,
+      "timeframe": "15m"
+    }
+  }
+}
