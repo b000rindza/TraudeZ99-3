@@ -1,0 +1,26 @@
+{
+  "name": "traudez99-3",
+  "version": "0.1.0",
+  "description": "Leveraged trading bot with multi-strategy support",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "lint": "eslint src/"
+  },
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "eslint": "^8.0.0",
+    "ts-node": "^10.0.0"
+  },
+  "dependencies": {
+    "ccxt": "^4.0.0"
+  }
+}
