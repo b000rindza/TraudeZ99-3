@@ -187,42 +187,237 @@ feature:       D---E---F  (original commits, now replayed as D', E', F')
 
 ---
 
-## 5. Handling Merge Conflicts
+## 5. Handling Merge Conflicts — Full Walkthrough
 
-From your screenshot, you saw: **"Branch has merge conflicts"**. Here's what that means and how to fix it.
+From your screenshot, PR #2 shows: **"Branch has merge conflicts"**. Here's what that means, and a complete step-by-step guide using the **real conflicts from your project**.
 
 ### Why Conflicts Happen
 
-Two people changed the **same line** in the **same file**. Git doesn't know which version is correct, so it asks YOU to decide.
+Two branches changed the **same lines** in the **same file**. Git doesn't know which version is correct, so it asks YOU to decide.
 
-### What a Conflict Looks Like
+In your case, both `claude/trading-bot-roadmap-BcQbz` and `claude/trading-bot-roadmap-rXmUU` changed these files:
+- `.gitignore`
+- `README.md`
+- `ROADMAP.md`
+- `package.json`
+- `src/index.ts`
+- `tsconfig.json`
 
-When you try to merge and there's a conflict, Git marks the file like this:
+### Step 1: Understand the Conflict Markers
+
+When Git finds a conflict, it marks the file with special markers. Here's a **real example** from your `src/index.ts`:
+
+```typescript
+<<<<<<< HEAD
+/**
+ * TraudeZ99-3 — Leveraged Trading Bot
+ */
+import { TradingEngine, TradingEngineConfig } from "./core/engine";
+
+async function main(): Promise<void> {
+  const config: TradingEngineConfig = {
+    exchange: process.env.EXCHANGE ?? "binance",
+    // ... simpler version
+  };
+  console.log("TraudeZ99-3 Trading Bot");
+  const engine = new TradingEngine(config);
+  await engine.start();
+}
+=======
+import { env } from './config/index.js';
+import { createChildLogger } from './utils/logger.js';
+
+const log = createChildLogger('main');
+
+async function main() {
+  log.info({ mode: env.TRADING_MODE, exchange: env.DEFAULT_EXCHANGE },
+    'TraudeZ99-3 starting');
+  log.info('Bot initialized successfully.');
+}
+>>>>>>> origin/claude/trading-bot-roadmap-rXmUU
+```
+
+**Think of it like this:**
+
+```
+<<<<<<< HEAD                    ← "HERE IS VERSION A (the branch you're merging INTO)"
+  ... version A code ...
+=======                         ← "HERE IS THE DIVIDER"
+  ... version B code ...
+>>>>>>> other-branch            ← "HERE IS VERSION B (the branch you're merging FROM)"
+```
+
+It's like Git is saying: *"Hey, I found two different answers. You pick."*
+
+### Step 2: Decide What to Keep
+
+You have **three choices** for every conflict:
+
+#### Choice A: Keep Only the TOP Version (HEAD)
+
+Delete everything from `=======` to `>>>>>>>`, and delete the marker lines:
+
+```typescript
+// RESULT: kept HEAD only
+/**
+ * TraudeZ99-3 — Leveraged Trading Bot
+ */
+import { TradingEngine, TradingEngineConfig } from "./core/engine";
+
+async function main(): Promise<void> {
+  const config: TradingEngineConfig = { /* ... */ };
+  console.log("TraudeZ99-3 Trading Bot");
+  const engine = new TradingEngine(config);
+  await engine.start();
+}
+```
+
+#### Choice B: Keep Only the BOTTOM Version (incoming branch)
+
+Delete everything from `<<<<<<< HEAD` to `=======`, and delete the marker lines:
+
+```typescript
+// RESULT: kept incoming only
+import { env } from './config/index.js';
+import { createChildLogger } from './utils/logger.js';
+
+const log = createChildLogger('main');
+
+async function main() {
+  log.info({ mode: env.TRADING_MODE, exchange: env.DEFAULT_EXCHANGE },
+    'TraudeZ99-3 starting');
+  log.info('Bot initialized successfully.');
+}
+```
+
+#### Choice C: Keep BOTH (combine them)
+
+Sometimes you want pieces from both versions. You manually edit the file to combine the best parts:
+
+```typescript
+// RESULT: combined the best of both
+import { env } from './config/index.js';
+import { createChildLogger } from './utils/logger.js';
+
+const log = createChildLogger('main');
+
+async function main(): Promise<void> {
+  log.info({
+    mode: env.TRADING_MODE,
+    exchange: env.DEFAULT_EXCHANGE,
+    pairs: env.TRADING_PAIRS,
+  }, 'TraudeZ99-3 starting');
+
+  log.info('Bot initialized successfully. Waiting for market data...');
+}
+```
+
+### Step 3: Remove ALL Conflict Markers
+
+This is the most important step. After you decide, make sure **none** of these lines remain in the file:
 
 ```
 <<<<<<< HEAD
-This is the version on main branch
 =======
-This is the version on your feature branch
->>>>>>> my-feature-branch
+>>>>>>> branch-name
 ```
 
-### How to Fix It
+If you leave even one marker in, your code will be broken. Most editors highlight these in bright red/yellow to help you spot them.
 
-1. **Open the conflicted file** in your editor
-2. **Choose which version to keep** (or combine them)
-3. **Remove the conflict markers** (`<<<<<<<`, `=======`, `>>>>>>>`)
-4. **Save the file**
-5. **Stage and commit**:
+### Step 4: Save, Stage, and Commit
 
 ```bash
-git add the-conflicted-file.ts
-git commit -m "Resolve merge conflict"
+# After fixing ALL conflicted files:
+git add .gitignore README.md ROADMAP.md package.json src/index.ts tsconfig.json
+
+# Create a commit that records the resolution:
+git commit -m "Resolve merge conflicts between roadmap branches"
+
+# Push the result:
+git push
 ```
 
-### On GitHub
+### Real Example: Your `package.json` Conflict
 
-If the conflict is simple, GitHub lets you resolve it right in the browser with a built-in editor. Click the **"Resolve conflicts"** button if it appears on the PR page.
+Here's another real conflict from your project. Both branches defined `package.json` differently:
+
+```json
+{
+<<<<<<< HEAD
+  "name": "traudez99-3",
+  "description": "Leveraged trading bot with multi-strategy support",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ccxt": "^4.0.0"
+  }
+=======
+  "name": "tradez99-3",
+  "description": "A modular, strategy-agnostic cryptocurrency trading bot",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ tests/"
+  },
+  "dependencies": {
+    "ccxt": "^4.4.0",
+    "dotenv": "^16.4.0",
+    "pino": "^9.5.0",
+    "zod": "^3.24.0"
+  }
+>>>>>>> origin/claude/trading-bot-roadmap-rXmUU
+}
+```
+
+**How to decide:**
+- The bottom version (`rXmUU`) has more dependencies, more scripts, and uses newer tools (`tsx`, `vitest` instead of `ts-node`, `jest`).
+- If `rXmUU` is the more complete/recent work, keep that version.
+- If both have things you want, combine them manually.
+
+### Doing It on GitHub (Browser)
+
+If the conflicts are simple enough, GitHub shows a **"Resolve conflicts"** button on the PR page:
+
+1. Click **"Resolve conflicts"**
+2. GitHub opens a text editor showing the conflict markers
+3. Edit the file directly in your browser — delete the markers, keep what you want
+4. Click **"Mark as resolved"** for each file
+5. When all files are resolved, click **"Commit merge"**
+
+### Doing It on Your Computer (Command Line)
+
+```bash
+# 1. Switch to the base branch
+git checkout claude/trading-bot-roadmap-BcQbz
+
+# 2. Pull the latest
+git pull
+
+# 3. Start the merge
+git merge origin/claude/trading-bot-roadmap-rXmUU
+
+# 4. Git will say "CONFLICT" — this is normal!
+# 5. Open each conflicted file in your editor
+# 6. Fix the conflicts (remove markers, pick the code you want)
+# 7. Stage the fixed files
+git add .
+
+# 8. Complete the merge
+git commit -m "Resolve merge conflicts"
+
+# 9. Push
+git push
+```
+
+### Pro Tips
+
+- **When in doubt, keep the newer version.** If one branch is clearly more recent/complete, go with that one.
+- **Use VS Code** — it has a built-in merge conflict editor with buttons: "Accept Current", "Accept Incoming", "Accept Both". Extremely helpful.
+- **Don't panic.** Conflicts look scary but they're just Git asking you to make a decision. You can always undo with `git merge --abort` if you mess up.
+- **Test after resolving.** After fixing all conflicts, run your code (`npm run build`, `npm test`) to make sure nothing is broken.
 
 ---
 
