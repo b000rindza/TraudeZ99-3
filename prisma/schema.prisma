@@ -1,0 +1,93 @@
+// TraudeZ99-3 Database Schema
+// This schema defines the data model for market data storage
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// OHLCV candlestick data
+model Candle {
+  id        Int      @id @default(autoincrement())
+  exchange  String
+  symbol    String
+  timeframe String
+  timestamp DateTime
+  open      Float
+  high      Float
+  low       Float
+  close     Float
+  volume    Float
+  createdAt DateTime @default(now())
+
+  @@unique([exchange, symbol, timeframe, timestamp])
+  @@index([exchange, symbol, timeframe])
+  @@index([timestamp])
+}
+
+// Individual trade data (tick data)
+model Trade {
+  id        Int      @id @default(autoincrement())
+  exchange  String
+  symbol    String
+  timestamp DateTime
+  price     Float
+  amount    Float
+  side      String   // 'buy' or 'sell'
+  tradeId   String?  // Exchange-specific trade ID
+  createdAt DateTime @default(now())
+
+  @@index([exchange, symbol])
+  @@index([timestamp])
+}
+
+// Order book snapshots (for analysis)
+model OrderBookSnapshot {
+  id        Int      @id @default(autoincrement())
+  exchange  String
+  symbol    String
+  timestamp DateTime
+  bids      String   // JSON array of [price, amount] pairs
+  asks      String   // JSON array of [price, amount] pairs
+  createdAt DateTime @default(now())
+
+  @@index([exchange, symbol])
+  @@index([timestamp])
+}
+
+// Ticker snapshots
+model Ticker {
+  id        Int      @id @default(autoincrement())
+  exchange  String
+  symbol    String
+  timestamp DateTime
+  bid       Float
+  ask       Float
+  last      Float
+  volume24h Float
+  createdAt DateTime @default(now())
+
+  @@index([exchange, symbol])
+  @@index([timestamp])
+}
+
+// Data sync status tracking
+model SyncStatus {
+  id            Int       @id @default(autoincrement())
+  exchange      String
+  symbol        String
+  timeframe     String
+  lastSyncedAt  DateTime?
+  oldestCandle  DateTime?
+  newestCandle  DateTime?
+  candleCount   Int       @default(0)
+  status        String    @default("idle") // 'idle', 'syncing', 'error'
+  errorMessage  String?
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([exchange, symbol, timeframe])
+}

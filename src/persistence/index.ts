@@ -1,2 +1,11 @@
-// Persistence layer — to be implemented in Phase 1
-// See ROADMAP.md for details
+export { initDatabase, getDatabase, saveDatabase, closeDatabase } from './database.js';
+export {
+  upsertCandles,
+  queryCandles,
+  getNewestCandleTimestamp,
+  getOldestCandleTimestamp,
+  getCandleCount,
+  updateSyncStatus,
+  getSyncStatus,
+} from './repositories/candles.js';
+export type { CandleQuery, SyncStatus } from './repositories/candles.js';

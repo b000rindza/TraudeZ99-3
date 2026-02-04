@@ -18,10 +18,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "backtest": "tsx src/backtest.ts",
-    "migrate": "prisma migrate dev",
-    "migrate:deploy": "prisma migrate deploy",
-    "prepare": "prisma generate"
+    "backtest": "tsx src/backtest.ts"
   },
   "keywords": [
     "trading-bot",
@@ -42,10 +39,14 @@
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
     "prom-client": "^15.1.0",
+    "sql.js": "^1.11.0",
+    "ws": "^8.18.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/sql.js": "^1.4.9",
+    "@types/ws": "^8.5.0",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.16.0",
